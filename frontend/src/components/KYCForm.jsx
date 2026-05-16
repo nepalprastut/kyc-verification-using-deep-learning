@@ -176,6 +176,7 @@ const KYCForm = () => {
   const [verificationDetails, setVerificationDetails] = useState({
     decisionReason: "",
     finalScore: null,
+    componentScores: null,
   });
   const [parsedFields, setParsedFields] = useState({});
 
@@ -183,6 +184,27 @@ const KYCForm = () => {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [gender, setGender] = useState("");
   const [citizenshipNumber, setCitizenshipNumber] = useState("");
+
+   const modelScoreRows = useMemo(() => {
+    if (!verificationDetails.componentScores) {
+      return [];
+    }
+
+    const labels = {
+      face_similarity: "Face Similarity",
+      stamp_similarity: "Stamp Similarity",
+      ocr_accuracy: "OCR Accuracy",
+      passive_liveness: "Passive Liveness",
+      document_tampering: "Document Tampering",
+    };
+
+    return Object.entries(verificationDetails.componentScores).map(([key, value]) => ({
+      key,
+      label: labels[key] || key.replace(/_/g, " "),
+      score: Number(value),
+    }));
+  }, [verificationDetails.componentScores]);
+
 
   useEffect(() => {
     const load = async () => {
@@ -332,7 +354,11 @@ const KYCForm = () => {
 
     setSubmitting(true);
     setVerificationStatus("");
-    setVerificationDetails({ decisionReason: "", finalScore: null });
+        setVerificationDetails({
+      decisionReason: "",
+      finalScore: null,
+      componentScores: null,
+    });
     setParsedFields({});
 
     try {
@@ -361,6 +387,7 @@ const KYCForm = () => {
             responseData.final_score !== undefined
               ? Number(responseData.final_score)
               : null,
+              componentScores: responseData.component_scores || null,
         });
       }
 
@@ -436,6 +463,32 @@ const KYCForm = () => {
               {verificationDetails.finalScore !== null ? (
                 <div className="mt-2 text-slate-600">
                   Final Score: {verificationDetails.finalScore.toFixed(2)}
+                </div>
+              ) : null}
+
+               {modelScoreRows.length ? (
+                <div className="mt-4">
+                  <div className="mb-2 font-medium text-slate-700">Individual Model Scores</div>
+                  <div className="overflow-hidden rounded-lg border border-slate-200">
+                    <table className="min-w-full divide-y divide-slate-200 text-xs md:text-sm">
+                      <thead className="bg-slate-100 text-left text-slate-700">
+                        <tr>
+                          <th className="px-3 py-2 font-semibold">Model</th>
+                          <th className="px-3 py-2 font-semibold">Score</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 bg-white text-slate-700">
+                        {modelScoreRows.map((row) => (
+                          <tr key={row.key}>
+                            <td className="px-3 py-2">{row.label}</td>
+                            <td className="px-3 py-2">
+                              {Number.isFinite(row.score) ? row.score.toFixed(4) : "N/A"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : null}
             </div>
