@@ -1,8 +1,19 @@
 fastapi==0.111.1
 uvicorn[standard]==0.30.6
 python-multipart==0.0.9
-
-# ML / active liveness
 numpy==1.26.4
+pillow
+pyyaml
+rapidfuzz
 opencv-python==4.10.0.84
 mediapipe==0.10.14
+ultralytics
+easyocr
+insightface
+onnxruntime
+scikit-learn
+scikit-image
+torch
+torchvision
+timm
+albumentations
